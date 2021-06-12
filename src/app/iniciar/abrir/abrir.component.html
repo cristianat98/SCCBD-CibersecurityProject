@@ -1,0 +1,22 @@
+<div class="centrar">
+    <header><h1 style="color:#6b6b6b;">COMO QUIERES INICIAR SESIÓN? </h1></header>
+    <h3>USAR LAS 12 PALABRAS</h3>
+    <input [(ngModel)]="palabras" type="string"/> 
+    <input type="submit" value="Ir a la Wallet" (click)="irWallet()"/>
+    <p *ngIf="errorPalabras" style="color:#FF0000;">
+        No has escrito bien las palabras
+    </p>
+    <h3>USAR SECRETO COMPARTIDO</h3>
+    Nº de claves necesarias: <input [(ngModel)]="numClaves" type="number"/> 
+    <input type="submit" value="Escribir las Claves" (click)="setLenClaves()"/>
+
+    <p *ngFor="let clave of claves; index as i">
+        Clave {{i + 1}}: <input [(ngModel)]="claves[i]" type="string"/>
+    </p>
+    <p>
+        <input type="submit" value="Ir a la Wallet" (click)="getSecreto()"/>
+    </p>
+    <p *ngIf="errorClaves" style="color:#FF0000;">
+        Debes escribir todas las claves
+    </p>
+</div>

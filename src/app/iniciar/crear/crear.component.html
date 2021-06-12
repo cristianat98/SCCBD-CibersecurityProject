@@ -1,0 +1,32 @@
+<div class="centrar">
+    Sus 12 palabras son las siguientes: 
+    <p>
+        {{mnemonic}}
+    </p>
+    <h2>USAR EL SECRETO COMPARTIDO</h2>
+    <form [formGroup]="secretoForm" (ngSubmit)="generar()">
+        Nº de Claves Totales: <input type="number" formControlName="numClaves"/>
+        <ng-container
+            *ngIf="!formControls.numClaves.valid && pulsado">
+            <p *ngIf="formControls.numClaves.errors.required" style="color:#FF0000">
+                Este Campo es Obligatorio
+            </p>
+        </ng-container>
+        Nº de Claves Necesarias <input type="number" formControlName="numRequest"/>
+        <ng-container
+            *ngIf="!formControls.numRequest.valid && pulsado">
+            <p *ngIf="formControls.numRequest.errors.required" style="color:#FF0000">
+                Este Campo es Obligatorio
+            </p>
+        </ng-container>
+        <p>
+            <input type="submit" value="Obtener Claves"/>
+        </p>
+    </form>
+    <p *ngFor="let clave of claves">
+        Clave: {{clave}}
+    </p>
+    <p>
+        <input type="submit" value="Ir a la Wallet" (click)="irWallet()"/>
+    </p>
+</div>

@@ -33,15 +33,8 @@ export class AbrirComponent implements OnInit {
       return;
     }
 
-    /*await arrayPalabras.forEach((palabra: string) => {
-      if (palabra === ""){
-        this.errorPalabras = true;
-        return;
-      }
-    })*/
     let i: number = 0;
     while (i < 12){
-      console.log(arrayPalabras[i]);
       if (arrayPalabras[i] === ""){
         this.errorPalabras = true;
         return;

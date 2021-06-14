@@ -1,4 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { HDNode } from 'ethers/lib/utils';
+import { BigNumber, ethers, Wallet } from 'ethers';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-principal',
@@ -7,9 +11,67 @@ import { Component, OnInit } from '@angular/core';
 })
 export class PrincipalComponent implements OnInit {
 
-  constructor() { }
+  wallet: Wallet;
+  balance: string = "0 ETHS";
+  address: string;
+  addressBoolean: Boolean = false;
+  enviarBoolean: Boolean = false;
+  enviarForm: FormGroup;
+  pulsado: Boolean = false;
+  constructor(private changeDetectorRef: ChangeDetectorRef, private formBuilder: FormBuilder) { }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    this.enviarForm = this.formBuilder.group({
+      numEthers: ['', Validators.required],
+      destAddress: ['', Validators.required],
+      confirmAddress: ['', Validators.required]
+    });
+
+    const palabras: string = history.state.palabras;
+    const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:7545");
+    const masterNode: HDNode = ethers.utils.HDNode.fromMnemonic(palabras);
+    const keypair1 = masterNode.derivePath("m/44'/60'/0'/0/0");//preguntar indice 0 no da correctamente ETHERS
+    this.wallet = new Wallet(keypair1.privateKey, provider);
+    await this.getBalance();
   }
 
+  get formControls(){
+    return this.enviarForm.controls;
+  }
+
+  formEthers(): void {
+    this.addressBoolean = false;
+    this.enviarBoolean = true;
+  }
+
+  async enviarEthers(): Promise<void> {
+    this.pulsado = true;
+    if (this.enviarForm.invalid){
+      return;
+    }
+
+    if (this.enviarForm.value.destAddress !== this.enviarForm.value.confirmAddress){
+      return;
+    }
+
+    const tx = await this.wallet.sendTransaction({
+      to: this.enviarForm.value.destAddress,
+      value: ethers.utils.parseEther(this.enviarForm.value.numEthers.toString())
+    });
+  }
+
+  async getAddress(): Promise<void> {
+    this.enviarBoolean = false;
+    if (!this.addressBoolean){
+      this.address = await this.wallet.getAddress();
+      this.addressBoolean = true;
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  async getBalance(): Promise<void> {
+    const balanceBigNumber: BigNumber = await this.wallet.getBalance();
+    this.balance = ethers.utils.formatEther(balanceBigNumber) + " ETHS";
+    this.changeDetectorRef.detectChanges();
+  }
 }

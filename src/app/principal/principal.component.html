@@ -1,2 +1,47 @@
-<p>principal works!</p>
-<p>ESTO ES LA WALLET AQUI VAN LAS FUNCIONALIDADES </p>
+<div class="centrar">
+    <p>BALANCE: {{balance}}</p>
+    <p>
+        <input type="submit" value="RefreshBalance" (click)="getBalance()"/>
+
+        <input type="submit" value="Enviar" (click)="formEthers()"/>
+        <input type="submit" value="Recibir" (click)="getAddress()"/>
+    </p>
+
+    <div *ngIf="enviarBoolean">
+        <form [formGroup]="enviarForm" (ngSubmit)="enviarEthers()">
+            Introduce cuantos ethers quieres enviar: <input type="number" formControlName="numEthers"/>*
+            <ng-container
+                *ngIf="!formControls.numEthers.valid && pulsado">
+                <p *ngIf="formControls.numEthers.errors.required" style="color:#FF0000">
+                    Este Campo es Obligatorio
+                </p>
+            </ng-container>
+            <br>
+            <p>
+                Escribe la dirección de la billetera destino: <input type="string" size="50" formControlName="destAddress"/>*
+                <ng-container
+                    *ngIf="!formControls.destAddress.valid && pulsado">
+                    <p *ngIf="formControls.destAddress.errors.required" style="color:#FF0000">
+                        Este Campo es Obligatorio
+                    </p>
+                </ng-container>
+            </p>
+            <p>
+                Vuelve a escribir la dirección de la billetera destino: <input type="string" size="50" formControlName="confirmAddress"/>*
+                <ng-container
+                    *ngIf="!formControls.confirmAddress.valid && pulsado">
+                    <p *ngIf="formControls.confrimAddress.errors.required" style="color:#FF0000">
+                        Este Campo es Obligatorio
+                    </p>
+                </ng-container>
+            </p>
+            <p>
+                <input type="submit" value="Enviar Ethers"/>
+            </p>
+        </form>
+    </div>  
+    <div *ngIf="addressBoolean">{{address}}</div>
+    
+
+
+</div>

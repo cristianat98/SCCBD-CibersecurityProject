@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NavigationExtras, Router } from '@angular/router';
-import { ethers, Wallet } from 'ethers';
+import { ethers } from 'ethers';
 import * as cryptojs from 'crypto-js';
 import * as bigintConversion from 'bigint-conversion';
-import { HDNode } from '@ethersproject/hdnode';
 import * as fs from 'file-system';
 import { environment } from 'src/environments/environment';
 
@@ -25,11 +24,19 @@ export class CrearComponent implements OnInit {
     this.secretoForm = this.formBuilder.group({
       numClaves: ['', Validators.required],
       numRequest: ['', Validators.required]
-    })
+    }, { validator: this.checkForm })
 
     const semilla: Uint8Array = window.crypto.getRandomValues(new Uint8Array(16));
     this.mnemonic = ethers.utils.entropyToMnemonic(semilla);
     environment.login = true;
+  }
+
+  checkForm(group: FormGroup) {
+    if (group.value.numClaves < group.value.numRequest)
+      return ({checkForm: true});
+    
+    else
+      return null;
   }
 
   generar(): void {
@@ -37,10 +44,7 @@ export class CrearComponent implements OnInit {
     if (this.secretoForm.invalid){
       return
     }
-
-    if (this.secretoForm.value.numClaves < this.secretoForm.value.numRequest){
-      return;
-    }
+    
     let i: number = 0;
     this.claves = [];
     while (i<this.secretoForm.value.numClaves){

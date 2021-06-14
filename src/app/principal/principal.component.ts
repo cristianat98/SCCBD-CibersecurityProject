@@ -22,7 +22,7 @@ export class PrincipalComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.enviarForm = this.formBuilder.group({
-      numEthers: ['', Validators.required],
+      numEthers: ['', Validators.required, this.ethersValid],
       destAddress: ['', Validators.required],
       confirmAddress: ['', Validators.required]
     });
@@ -37,6 +37,14 @@ export class PrincipalComponent implements OnInit {
 
   get formControls(){
     return this.enviarForm.controls;
+  }
+
+  ethersValid(group: FormGroup) {
+    if (group.value < 0)
+      return ({ethersValid:true})
+
+    else
+      return null;
   }
 
   formEthers(): void {

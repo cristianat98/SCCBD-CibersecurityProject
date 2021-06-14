@@ -10,10 +10,12 @@
     <div *ngIf="enviarBoolean">
         <form [formGroup]="enviarForm" (ngSubmit)="enviarEthers()">
             Introduce cuantos ethers quieres enviar: <input type="number" formControlName="numEthers"/>*
-            <ng-container
-                *ngIf="!formControls.numEthers.valid && pulsado">
+            <ng-container *ngIf="!formControls.numEthers.valid && pulsado">
                 <p *ngIf="formControls.numEthers.errors.required" style="color:#FF0000">
                     Este Campo es Obligatorio
+                </p>
+                <p *ngIf="formControls.numEthers.errors.ethersValid" style="color:#FF0000">
+                    No puedes enviar Ethers Negativos
                 </p>
             </ng-container>
             <br>

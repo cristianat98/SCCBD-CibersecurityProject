@@ -18,6 +18,7 @@ export class PrincipalComponent implements OnInit {
   enviarBoolean: Boolean = false;
   enviarForm: FormGroup;
   pulsado: Boolean = false;
+  gasPrice: string = "0";
   constructor(private changeDetectorRef: ChangeDetectorRef, private formBuilder: FormBuilder) { }
 
   async ngOnInit(): Promise<void> {
@@ -33,6 +34,8 @@ export class PrincipalComponent implements OnInit {
     const keypair1 = masterNode.derivePath("m/44'/60'/0'/0/0");//preguntar indice 0 no da correctamente ETHERS
     this.wallet = new Wallet(keypair1.privateKey, provider);
     await this.getBalance();
+    const gasPriceBigNumber: BigNumber = await provider.getGasPrice();
+    this.gasPrice = ethers.utils.formatUnits(gasPriceBigNumber, "gwei")
   }
 
   get formControls(){

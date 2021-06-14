@@ -1,8 +1,7 @@
 <div class="centrar">
-    <p>BALANCE: {{balance}}</p>
+    <p>BALANCE: {{balance}} <input type="submit" value="RefreshBalance" (click)="getBalance()"/></p>
+    <p>PRECIO GAS: {{gasPrice}}</p>
     <p>
-        <input type="submit" value="RefreshBalance" (click)="getBalance()"/>
-
         <input type="submit" value="Enviar" (click)="formEthers()"/>
         <input type="submit" value="Recibir" (click)="getAddress()"/>
     </p>

@@ -12,30 +12,36 @@
             Introduce cuantos ethers quieres enviar: <input type="number" formControlName="numEthers"/>*
             <ng-container *ngIf="!formControls.numEthers.valid && pulsado">
                 <p *ngIf="formControls.numEthers.errors.required" style="color:#FF0000">
-                    Este Campo es Obligatorio
+                    Este campo es obligatorio
                 </p>
-                <p *ngIf="formControls.numEthers.errors.ethersValid" style="color:#FF0000">
-                    No puedes enviar Ethers Negativos
+                <p *ngIf="formControls.numEthers.errors.ethersValid && !formControls.numEthers.errors.required" style="color:#FF0000">
+                    Valor no correcto
                 </p>
             </ng-container>
-            <br>
             <p>
                 Escribe la dirección de la billetera destino: <input type="string" size="50" formControlName="destAddress"/>*
-                <ng-container
-                    *ngIf="!formControls.destAddress.valid && pulsado">
+                <ng-container *ngIf="!formControls.destAddress.valid && pulsado">
                     <p *ngIf="formControls.destAddress.errors.required" style="color:#FF0000">
-                        Este Campo es Obligatorio
+                        Este campo es obligatorio
+                    </p>
+                    <p *ngIf="!formControls.destAddress.errors.required && formControls.destAddress.errors.checkLength" style="color:#FF0000">
+                        La longitud no es correcta
                     </p>
                 </ng-container>
             </p>
             <p>
                 Vuelve a escribir la dirección de la billetera destino: <input type="string" size="50" formControlName="confirmAddress"/>*
-                <ng-container
-                    *ngIf="!formControls.confirmAddress.valid && pulsado">
-                    <p *ngIf="formControls.confrimAddress.errors.required" style="color:#FF0000">
-                        Este Campo es Obligatorio
+                <ng-container *ngIf="!formControls.confirmAddress.valid && pulsado">
+                    <p *ngIf="formControls.confirmAddress.errors.required" style="color:#FF0000">
+                        Este campo es obligatorio
+                    </p>
+                    <p *ngIf="!formControls.confirmAddress.errors.required && formControls.confirmAddress.errors.checkLength && pulsado" style="color:#FF0000">
+                        La longitud no es correcta
                     </p>
                 </ng-container>
+            </p>
+            <p *ngIf="enviarForm.hasError('checkAddress')" style="color:#FF0000">
+                Las direcciones tienen que coincidir
             </p>
             <p>
                 <input type="submit" value="Enviar Ethers"/>

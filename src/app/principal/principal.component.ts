@@ -22,10 +22,10 @@ export class PrincipalComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.enviarForm = this.formBuilder.group({
-      numEthers: ['', Validators.required, this.ethersValid],
-      destAddress: ['', Validators.required],
-      confirmAddress: ['', Validators.required]
-    });
+      numEthers: ['', [Validators.required, this.ethersValid]],
+      destAddress: ['', [Validators.required, this.checkLength]],
+      confirmAddress: ['', [Validators.required, this.checkLength]]
+    }, { validator: this.checkAddress});
 
     const palabras: string = history.state.palabras;
     const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:7545");
@@ -40,8 +40,24 @@ export class PrincipalComponent implements OnInit {
   }
 
   ethersValid(group: FormGroup) {
-    if (group.value < 0)
-      return ({ethersValid:true})
+    if (group.value <= 0)
+      return ({ethersValid: true})
+
+    else
+      return null;
+  }
+
+  checkAddress(group: FormGroup) {
+    if (group.value.destAddress !== group.value.confirmAddress)
+      return ({checkAddress: true});
+
+    else
+      return null;
+  }
+
+  checkLength(group: FormGroup) {
+    if (group.value.length !== 40)
+      return ({checkLength: true})
 
     else
       return null;

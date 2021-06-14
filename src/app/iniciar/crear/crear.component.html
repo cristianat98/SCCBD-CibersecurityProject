@@ -8,7 +8,7 @@
         Nº de Claves Totales: <input type="number" formControlName="numClaves"/>
         <ng-container *ngIf="!formControls.numClaves.valid && pulsado">
             <p *ngIf="formControls.numClaves.errors.required" style="color:#FF0000">
-                Este Campo es Obligatorio
+                Este campo es obligatorio
             </p>
         </ng-container>
         <p>
@@ -16,10 +16,10 @@
         </p>
         <ng-container *ngIf="!formControls.numRequest.valid && pulsado">
             <p *ngIf="formControls.numRequest.errors.required" style="color:#FF0000">
-                Este Campo es Obligatorio
+                Este campo es obligatorio
             </p>
         </ng-container>
-        <p *ngIf="secretoForm.hasError('checkForm')" style="color:#FF0000">
+        <p *ngIf="secretoForm.hasError('checkForm') && pulsado" style="color:#FF0000">
             No pueden haber más claves necesarias que totales
         </p>
         <p>

@@ -1,6 +1,6 @@
 <div class="centrar">
-    <p>BALANCE: {{balance}} <input type="submit" value="RefreshBalance" (click)="getBalance()"/></p>
-    <p>PRECIO GAS: {{gasPrice}}</p>
+    <p>BALANCE: {{balance}} <input type="submit" value="RefreshBalance" (click)="getBalanceInfura()"/></p>
+    <p>PRECIO GAS: {{gasPriceString}}</p>
     <p>
         <input type="submit" value="Enviar" (click)="formEthers()"/>
         <input type="submit" value="Recibir" (click)="getAddress()"/>
@@ -9,6 +9,9 @@
     <div *ngIf="enviarBoolean">
         <form [formGroup]="enviarForm" (ngSubmit)="enviarEthers()">
             Introduce cuantos ethers quieres enviar: <input type="number" formControlName="numEthers"/>*
+            <p *ngIf="enviarForm.value.numEthers > 0">
+                    Precio estimado del GAS: {{estimacionGas}}
+            </p>
             <ng-container *ngIf="!formControls.numEthers.valid && pulsado">
                 <p *ngIf="formControls.numEthers.errors.required" style="color:#FF0000">
                     Este campo es obligatorio

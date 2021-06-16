@@ -12,13 +12,16 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 export class PrincipalComponent implements OnInit {
 
   wallet: Wallet;
-  balance: string = "0 ETHS";
+  balance: string = "Cargando...";
   address: string;
   addressBoolean: Boolean = false;
   enviarBoolean: Boolean = false;
   enviarForm: FormGroup;
   pulsado: Boolean = false;
-  gasPrice: string = "0";
+  gasPrice: number = 0;
+  gasPriceString: string = "Cargando...";
+  estimacionGas: number = 0;
+  provider;
   constructor(private changeDetectorRef: ChangeDetectorRef, private formBuilder: FormBuilder, private router: Router) { }
 
   async ngOnInit(): Promise<void> {
@@ -29,27 +32,27 @@ export class PrincipalComponent implements OnInit {
     }, { validator: this.checkAddress});
 
     const palabras: string = history.state.palabras;
-    
+
     try{
       const masterNode: HDNode = ethers.utils.HDNode.fromMnemonic(palabras);
-      const keypair1 = masterNode.derivePath("m/44'/60'/0'/0/0");//preguntar indice 0 no da correctamente ETHERS
+      const keypair1: HDNode = masterNode.derivePath("m/44'/60'/0'/0/0");//preguntar indice 0 no da correctamente ETHERS
   
       //LOCALHOST -> GANACHE
-      /*const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:7545");
-      this.wallet = new Wallet(keypair1.privateKey, provider);
-      await this.getBalance();
-      const gasPriceBigNumber: BigNumber = await provider.getGasPrice();
-      //1 gwei = 0.000000001 ether.
-      this.gasPrice = ethers.utils.formatUnits(gasPriceBigNumber, "gwei");
-      this.changeDetectorRef.detectChanges();*/
+      /*this.provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:7545");*/
   
       //TESNET -> INFURA
-      const itx = new ethers.providers.InfuraProvider(
+      this.provider = new ethers.providers.InfuraProvider(
         'ropsten',
         'e09590d7ebcc4cab9ea6b6e44ad57a24'
       );
-      this.wallet = new ethers.Wallet(keypair1.privateKey, itx);
-      await this.getBalanceInfura(itx);
+
+      this.wallet = new Wallet(keypair1.privateKey, this.provider);
+      const gasPriceBigNumber: BigNumber = await this.provider.getGasPrice();
+      //1 gwei = 0.000000001 ether.
+      this.gasPrice = parseInt(ethers.utils.formatUnits(gasPriceBigNumber, "gwei"));
+      this.gasPriceString = this.gasPrice.toString() + " GWEI (1 GWEI = 0.000000001 ETHER)";
+      await this.getBalance();
+      await this.getBalanceInfura();
     }
     
     catch{
@@ -65,8 +68,11 @@ export class PrincipalComponent implements OnInit {
     if (group.value <= 0)
       return ({ethersValid: true})
 
-    else
+    else{
+      /*console.log(this.gasPrice);
+      this.estimacionGas = (21000 * this.gasPrice)/0.000000001;*/
       return null;
+    } 
   }
 
   checkAddress(group: FormGroup) {
@@ -78,7 +84,7 @@ export class PrincipalComponent implements OnInit {
   }
 
   checkLength(group: FormGroup) {
-    if (group.value.length !== 42)
+    if (group.value.length < 39 || group.value.length > 42 || group.value.length === 41)
       return ({checkLength: true})
 
     else
@@ -93,10 +99,6 @@ export class PrincipalComponent implements OnInit {
   async enviarEthers(): Promise<void> {
     this.pulsado = true;
     if (this.enviarForm.invalid){
-      return;
-    }
-
-    if (this.enviarForm.value.destAddress !== this.enviarForm.value.confirmAddress){
       return;
     }
 
@@ -121,9 +123,11 @@ export class PrincipalComponent implements OnInit {
     this.changeDetectorRef.detectChanges();
   }
 
-  async getBalanceInfura(itx): Promise<void> {
+  async getBalanceInfura(): Promise<void> {
     this.address = await this.wallet.getAddress();
-    const response = await itx.send('relay_getBalance', [this.address])
-    this.balance = response.balance;
+    const response = await this.provider.send('relay_getBalance', [this.address]);
+    console.log(response);
+    //this.balance = response.balance + " ETHS";
+    //this.changeDetectorRef.detectChanges();
   }
 }

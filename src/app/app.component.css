@@ -1,0 +1,18 @@
+.left {
+    padding-left: 10px;
+    padding-top: 10px;
+    margin-left: 10px;
+    float: left;
+    position: relative;
+    width: auto;
+    height: auto;
+}
+
+.right {
+    padding-top: 10px;
+    padding-left: 10px;
+    margin-left: 10px;
+    position: relative;
+    float: right;
+    height: auto;
+}

@@ -26,7 +26,7 @@ const routes: Routes = [
   },
   {
     path: 'wallet',
-    //canActivateChild: [LoginGuard],
+    canActivateChild: [LoginGuard],
     children: [
       {
         path: '',

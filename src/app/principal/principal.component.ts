@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { HDNode } from 'ethers/lib/utils';
-import { BigNumber, ethers, Wallet } from 'ethers';
+import { BigNumber, ethers, Transaction, Wallet } from 'ethers';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
@@ -29,13 +29,25 @@ export class PrincipalComponent implements OnInit {
     }, { validator: this.checkAddress});
 
     const palabras: string = history.state.palabras;
-    const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:7545");
     const masterNode: HDNode = ethers.utils.HDNode.fromMnemonic(palabras);
     const keypair1 = masterNode.derivePath("m/44'/60'/0'/0/0");//preguntar indice 0 no da correctamente ETHERS
+
+    //LOCALHOST -> GANACHE
+    /*const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:7545");
     this.wallet = new Wallet(keypair1.privateKey, provider);
     await this.getBalance();
     const gasPriceBigNumber: BigNumber = await provider.getGasPrice();
-    this.gasPrice = ethers.utils.formatUnits(gasPriceBigNumber, "gwei")
+    //1 gwei = 0.000000001 ether.
+    this.gasPrice = ethers.utils.formatUnits(gasPriceBigNumber, "gwei");
+    this.changeDetectorRef.detectChanges();*/
+
+    //TESNET -> INFURA
+    const itx = new ethers.providers.InfuraProvider(
+      'ropsten',
+      'e09590d7ebcc4cab9ea6b6e44ad57a24'
+    );
+    this.wallet = new ethers.Wallet(keypair1.privateKey, itx);
+    await this.getBalanceInfura(itx);
   }
 
   get formControls(){
@@ -59,7 +71,7 @@ export class PrincipalComponent implements OnInit {
   }
 
   checkLength(group: FormGroup) {
-    if (group.value.length !== 40)
+    if (group.value.length !== 42)
       return ({checkLength: true})
 
     else
@@ -100,5 +112,11 @@ export class PrincipalComponent implements OnInit {
     const balanceBigNumber: BigNumber = await this.wallet.getBalance();
     this.balance = ethers.utils.formatEther(balanceBigNumber) + " ETHS";
     this.changeDetectorRef.detectChanges();
+  }
+
+  async getBalanceInfura(itx): Promise<void> {
+    this.address = await this.wallet.getAddress();
+    const response = await itx.send('relay_getBalance', [this.address])
+    this.balance = response.balance;
   }
 }

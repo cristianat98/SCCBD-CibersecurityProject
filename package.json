@@ -25,6 +25,7 @@
     "file-system": "^2.2.2",
     "rxjs": "~6.6.0",
     "secrets.js-grempe": "^2.0.0",
+    "shamirs-secret-sharing-ts": "^1.0.2",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"
   },

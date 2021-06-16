@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 import * as cryptojs from 'crypto-js';
 import * as bigintConversion from 'bigint-conversion';
 import * as fs from 'file-system';
+import * as secrets from 'shamirs-secret-sharing-ts';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -44,7 +45,17 @@ export class CrearComponent implements OnInit {
     if (this.secretoForm.invalid){
       return
     }
-    
+
+    //Probando libreria secrets.js grempe
+    var key = Buffer.from(window.crypto.getRandomValues(new Uint8Array(16)));
+    const options = {
+      shares: 4,
+      threshold: 3
+    }
+
+    var shares = secrets.split(key, options);
+    var comb = Buffer.from(secrets.combine(shares.slice(0, 4)));
+
     let i: number = 0;
     this.claves = [];
     while (i<this.secretoForm.value.numClaves){
@@ -65,7 +76,4 @@ export class CrearComponent implements OnInit {
     };
     this.router.navigate(['/wallet'], navigationExtras);
   }
-  /*const seed = ethers.utils.mnemonicToSeed("alien fine expire retire spoon reduce anger allow solution merry amazing top");
-  const masterNodeDinero: HDNode = ethers.utils.HDNode.fromSeed(seed);
-  */
 }

@@ -2,9 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NavigationExtras, Router } from '@angular/router';
 import { ethers } from 'ethers';
-import * as cryptojs from 'crypto-js';
 import * as bigintConversion from 'bigint-conversion';
-import * as fs from 'file-system';
 import * as secrets from 'shamirs-secret-sharing-ts';
 import { environment } from 'src/environments/environment';
 
@@ -19,6 +17,7 @@ export class CrearComponent implements OnInit {
   secretoForm: FormGroup;
   claves: string[] = [];
   pulsado: Boolean = false;
+  semilla: Uint8Array;
   constructor(private router: Router, private formBuilder: FormBuilder) { }
 
   ngOnInit(): void {
@@ -27,13 +26,13 @@ export class CrearComponent implements OnInit {
       numRequest: ['', Validators.required]
     }, { validator: this.checkForm })
 
-    const semilla: Uint8Array = window.crypto.getRandomValues(new Uint8Array(16));
-    this.mnemonic = ethers.utils.entropyToMnemonic(semilla);
+    this.semilla = window.crypto.getRandomValues(new Uint8Array(16));
+    this.mnemonic = ethers.utils.entropyToMnemonic(this.semilla);
     environment.login = true;
   }
 
   checkForm(group: FormGroup) {
-    if (group.value.numClaves < group.value.numRequest)
+    if (group.value.numClaves < group.value.numRequest || group.value.numClaves < 0)
       return ({checkForm: true});
     
     else
@@ -46,20 +45,17 @@ export class CrearComponent implements OnInit {
       return
     }
 
-    //Probando libreria secrets.js grempe
-    var key = Buffer.from(window.crypto.getRandomValues(new Uint8Array(16)));
+    const semillaBuffer: Buffer = Buffer.from(this.semilla);
     const options = {
-      shares: 4,
-      threshold: 3
+      shares: this.secretoForm.value.numClaves,
+      threshold: this.secretoForm.value.numRequest
     }
 
-    var shares = secrets.split(key, options);
-    var comb = Buffer.from(secrets.combine(shares.slice(0, 4)));
-
+    const shares: Uint8Array[] = secrets.split(semillaBuffer, options);
     let i: number = 0;
     this.claves = [];
     while (i<this.secretoForm.value.numClaves){
-      this.claves.push(i.toString());
+      this.claves.push(bigintConversion.bufToHex(shares[i]));
       i++;
     }
   }

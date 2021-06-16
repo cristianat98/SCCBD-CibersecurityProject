@@ -20,14 +20,14 @@
             </p>
         </ng-container>
         <p *ngIf="secretoForm.hasError('checkForm') && pulsado" style="color:#FF0000">
-            No pueden haber más claves necesarias que totales
+            No has escrito bien los números
         </p>
         <p>
             <input type="submit" value="Obtener Claves"/>
         </p>
     </form>
-    <p *ngFor="let clave of claves">
-        Clave: {{clave}}
+    <p *ngFor="let clave of claves; index as i">
+        Clave {{i + 1}}: {{clave}}
     </p>
     <p>
         <input type="submit" value="Ir a la Wallet" (click)="irWallet()"/>

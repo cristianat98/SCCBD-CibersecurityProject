@@ -19,7 +19,7 @@ export class PrincipalComponent implements OnInit {
   enviarForm: FormGroup;
   pulsado: Boolean = false;
   gasPrice: string = "0";
-  constructor(private changeDetectorRef: ChangeDetectorRef, private formBuilder: FormBuilder) { }
+  constructor(private changeDetectorRef: ChangeDetectorRef, private formBuilder: FormBuilder, private router: Router) { }
 
   async ngOnInit(): Promise<void> {
     this.enviarForm = this.formBuilder.group({
@@ -29,25 +29,32 @@ export class PrincipalComponent implements OnInit {
     }, { validator: this.checkAddress});
 
     const palabras: string = history.state.palabras;
-    const masterNode: HDNode = ethers.utils.HDNode.fromMnemonic(palabras);
-    const keypair1 = masterNode.derivePath("m/44'/60'/0'/0/0");//preguntar indice 0 no da correctamente ETHERS
-
-    //LOCALHOST -> GANACHE
-    /*const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:7545");
-    this.wallet = new Wallet(keypair1.privateKey, provider);
-    await this.getBalance();
-    const gasPriceBigNumber: BigNumber = await provider.getGasPrice();
-    //1 gwei = 0.000000001 ether.
-    this.gasPrice = ethers.utils.formatUnits(gasPriceBigNumber, "gwei");
-    this.changeDetectorRef.detectChanges();*/
-
-    //TESNET -> INFURA
-    const itx = new ethers.providers.InfuraProvider(
-      'ropsten',
-      'e09590d7ebcc4cab9ea6b6e44ad57a24'
-    );
-    this.wallet = new ethers.Wallet(keypair1.privateKey, itx);
-    await this.getBalanceInfura(itx);
+    
+    try{
+      const masterNode: HDNode = ethers.utils.HDNode.fromMnemonic(palabras);
+      const keypair1 = masterNode.derivePath("m/44'/60'/0'/0/0");//preguntar indice 0 no da correctamente ETHERS
+  
+      //LOCALHOST -> GANACHE
+      /*const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:7545");
+      this.wallet = new Wallet(keypair1.privateKey, provider);
+      await this.getBalance();
+      const gasPriceBigNumber: BigNumber = await provider.getGasPrice();
+      //1 gwei = 0.000000001 ether.
+      this.gasPrice = ethers.utils.formatUnits(gasPriceBigNumber, "gwei");
+      this.changeDetectorRef.detectChanges();*/
+  
+      //TESNET -> INFURA
+      const itx = new ethers.providers.InfuraProvider(
+        'ropsten',
+        'e09590d7ebcc4cab9ea6b6e44ad57a24'
+      );
+      this.wallet = new ethers.Wallet(keypair1.privateKey, itx);
+      await this.getBalanceInfura(itx);
+    }
+    
+    catch{
+      this.router.navigate(['/abrir']);
+    }
   }
 
   get formControls(){

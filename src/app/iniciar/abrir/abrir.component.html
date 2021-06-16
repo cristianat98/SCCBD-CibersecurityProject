@@ -11,12 +11,15 @@
     <input type="submit" value="Escribir las Claves" (click)="setLenClaves()"/>
 
     <p *ngFor="let clave of claves; index as i">
-        Clave {{i + 1}}: <input [(ngModel)]="claves[i]" type="string"/>
+        Clave {{i + 1}}: <input [(ngModel)]="claves[i]" type="string" size="100"/>
     </p>
     <p>
         <input type="submit" value="Ir a la Wallet" (click)="getSecreto()"/>
     </p>
     <p *ngIf="errorClaves" style="color:#FF0000;">
         Debes escribir todas las claves
+    </p>
+    <p *ngIf="errorWallet" style="color:#FF0000;">
+        No se ha podido acceder a la Wallet. Comprueba que has escrito bien las claves
     </p>
 </div>

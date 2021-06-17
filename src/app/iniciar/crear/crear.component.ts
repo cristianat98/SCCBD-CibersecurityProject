@@ -5,6 +5,8 @@ import { ethers } from 'ethers';
 import * as bigintConversion from 'bigint-conversion';
 import * as secrets from 'shamirs-secret-sharing-ts';
 import { environment } from 'src/environments/environment';
+import * as hash from 'scrypt-pbkdf';
+import * as cryptojs from 'crypto-js';
 
 @Component({
   selector: 'app-crear',
@@ -15,9 +17,12 @@ export class CrearComponent implements OnInit {
   
   mnemonic: string;
   secretoForm: FormGroup;
+  passwordForm: FormGroup;
   claves: string[] = [];
   pulsado: Boolean = false;
+  pulsado2: Boolean = false;
   semilla: Uint8Array;
+  guardarBoolean: Boolean = true;
   constructor(private router: Router, private formBuilder: FormBuilder) { }
 
   ngOnInit(): void {
@@ -25,6 +30,11 @@ export class CrearComponent implements OnInit {
       numClaves: ['', Validators.required],
       numRequest: ['', Validators.required]
     }, { validator: this.checkForm })
+
+    this.passwordForm = this.formBuilder.group({
+      password: ['', Validators.required],
+      confirmPassword: ['', Validators.required]
+    }, { validator: this.checkPassword })
 
     this.semilla = window.crypto.getRandomValues(new Uint8Array(16));
     this.mnemonic = ethers.utils.entropyToMnemonic(this.semilla);
@@ -37,6 +47,50 @@ export class CrearComponent implements OnInit {
     
     else
       return null;
+  }
+
+  checkPassword(group: FormGroup) {
+    if (group.value.password !== group.value.confirmPassword)
+      return ({checkPassword: true})
+
+    else
+      return null;
+  }
+
+  get formControls(){
+    return this.secretoForm.controls;
+  }
+
+  get formControls2(){
+    return this.passwordForm.controls;
+  }
+
+  async guardar(): Promise<void> {
+    this.pulsado2 = true;
+    if (this.passwordForm.invalid){
+      return
+    }
+    
+    const hashPassword: string = cryptojs.SHA256(this.passwordForm.value.password).toString();
+    hash.scrypt(this.passwordForm.value.password, hashPassword, 32).then(async key => {
+      const clave = await crypto.subtle.importKey(
+        "raw",
+        key,
+        "AES-GCM",
+        true,
+        ["encrypt", "decrypt"]
+      )
+      const cifrado: ArrayBuffer = await crypto.subtle.encrypt(
+        {
+          name: "AES-GCM",
+          iv: new Uint8Array(bigintConversion.hexToBuf(hashPassword))
+        }, 
+        clave, 
+        new Uint8Array(bigintConversion.textToBuf(this.mnemonic))
+      )
+      localStorage.setItem('wordsEthereum', bigintConversion.bufToHex(cifrado));
+      this.guardarBoolean = false;
+    });
   }
 
   generar(): void {
@@ -58,10 +112,6 @@ export class CrearComponent implements OnInit {
       this.claves.push(bigintConversion.bufToHex(shares[i]));
       i++;
     }
-  }
-
-  get formControls(){
-    return this.secretoForm.controls;
   }
 
   irWallet(): void {

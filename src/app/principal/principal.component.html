@@ -1,5 +1,5 @@
 <div class="centrar">
-    <p>BALANCE: {{balance}} <input type="submit" value="RefreshBalance" (click)="getBalanceInfura()"/></p>
+    <p>BALANCE: {{balance}} <input type="submit" value="RefreshBalance" (click)="getBalance()"/></p>
     <p>PRECIO GAS: {{gasPriceString}}</p>
     <p>
         <input type="submit" value="Enviar" (click)="formEthers()"/>
@@ -42,7 +42,7 @@
                     </p>
                 </ng-container>
             </p>
-            <p *ngIf="enviarForm.hasError('checkAddress')" style="color:#FF0000">
+            <p *ngIf="enviarForm.hasError('checkAddress') && pulsado" style="color:#FF0000">
                 Las direcciones tienen que coincidir
             </p>
             <p>

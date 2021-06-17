@@ -4,6 +4,8 @@ import * as secrets from 'shamirs-secret-sharing-ts';
 import { environment } from 'src/environments/environment';
 import { ethers } from 'ethers';
 import * as bigintConversion from 'bigint-conversion';
+import * as cryptojs from 'crypto-js';
+import * as hash from 'scrypt-pbkdf';
 
 @Component({
   selector: 'app-abrir',
@@ -18,9 +20,49 @@ export class AbrirComponent implements OnInit {
   palabras: string;
   errorPalabras: Boolean = false;
   errorWallet: Boolean = false;
+  palabrasBoolean: Boolean = false;
+  password: string;
+  errorPassword: Boolean = false;
   constructor(private router: Router) { }
 
   ngOnInit(): void {
+    if (localStorage.getItem('wordsEthereum') !== undefined)
+      this.palabrasBoolean = true;
+  }
+
+  cargar(): void {
+    if (this.password === undefined || this.password === "")
+      this.errorPassword = true;
+
+    else{
+      this.errorPassword = false;
+      const hashPassword: string = cryptojs.SHA256(this.password).toString();
+      hash.scrypt(this.password, hashPassword, 32).then(async key => {
+        const clave = await crypto.subtle.importKey(
+          "raw",
+          key,
+          "AES-GCM",
+          true,
+          ["encrypt", "decrypt"]
+        )
+        const cifrado: ArrayBuffer = await crypto.subtle.decrypt(
+          {
+            name: "AES-GCM",
+            iv: new Uint8Array(bigintConversion.hexToBuf(hashPassword))
+          },
+          clave,
+          bigintConversion.hexToBuf(localStorage.getItem('wordsEthereum'))
+        )
+        this.palabras = bigintConversion.bufToText(cifrado);
+        environment.login = true;
+        const navigationExtras: NavigationExtras = {
+          state: {
+            palabras: this.palabras
+          }
+        };
+        this.router.navigate(['/wallet'], navigationExtras);
+      });
+    }
   }
 
   irWallet(): void{

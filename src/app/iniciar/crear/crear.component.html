@@ -1,8 +1,34 @@
 <div class="centrar">
     Sus 12 palabras son las siguientes: 
-    <p>
-        {{mnemonic}}
-    </p>
+    <p>{{mnemonic}}</p>
+    <div *ngIf="guardarBoolean">
+        <p>Si quieres puedes guardar el mnemonic en el navegador (protegiéndolo con una contraseña) para poder entrar en tu wallet de una forma rápida</p>
+        <form [formGroup]="passwordForm" (ngSubmit)="guardar()">
+            Contraseña: <input type="password" formControlName="password"/>
+            <ng-container *ngIf="!formControls2.password.valid && pulsado2">
+                <p *ngIf="formControl2s.password.errors.required" style="color:#FF0000">
+                    Este campo es obligatorio
+                </p>
+            </ng-container>
+            <p>
+                Confirmar Contraseña: <input type="password" formControlName="confirmPassword"/>
+            </p>
+            <ng-container *ngIf="!formControls2.confirmPassword.valid && pulsado2">
+                <p *ngIf="formControls2.confirmPassword.errors.required" style="color:#FF0000">
+                    Este campo es obligatorio
+                </p>
+            </ng-container>
+            <p *ngIf="passwordForm.hasError('checkPassword') && pulsado2" style="color:#FF0000">
+                Las contraseñas tienen que coincidir
+            </p>
+            <p>
+                <input type="submit" value="Guardar">
+            </p>
+        </form>
+    </div>
+    <div *ngIf="!guardarBoolean">
+        <p>PALABRAS GUARDADAS</p>
+    </div>
     <h2>USAR EL SECRETO COMPARTIDO</h2>
     <form [formGroup]="secretoForm" (ngSubmit)="generar()">
         Nº de Claves Totales: <input type="number" formControlName="numClaves"/>

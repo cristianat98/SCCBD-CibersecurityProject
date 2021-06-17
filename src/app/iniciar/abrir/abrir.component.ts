@@ -23,10 +23,11 @@ export class AbrirComponent implements OnInit {
   palabrasBoolean: Boolean = false;
   password: string;
   errorPassword: Boolean = false;
+  informacion: string = "";
   constructor(private router: Router) { }
 
   ngOnInit(): void {
-    if (localStorage.getItem('wordsEthereum') !== undefined)
+    if (localStorage.getItem('wordsEthereum') !== null)
       this.palabrasBoolean = true;
   }
 
@@ -36,6 +37,7 @@ export class AbrirComponent implements OnInit {
 
     else{
       this.errorPassword = false;
+      this.informacion = "Cargando...";
       const hashPassword: string = cryptojs.SHA256(this.password).toString();
       hash.scrypt(this.password, hashPassword, 32).then(async key => {
         const clave = await crypto.subtle.importKey(
@@ -45,22 +47,30 @@ export class AbrirComponent implements OnInit {
           true,
           ["encrypt", "decrypt"]
         )
-        const cifrado: ArrayBuffer = await crypto.subtle.decrypt(
-          {
-            name: "AES-GCM",
-            iv: new Uint8Array(bigintConversion.hexToBuf(hashPassword))
-          },
-          clave,
-          bigintConversion.hexToBuf(localStorage.getItem('wordsEthereum'))
-        )
-        this.palabras = bigintConversion.bufToText(cifrado);
-        environment.login = true;
-        const navigationExtras: NavigationExtras = {
-          state: {
-            palabras: this.palabras
-          }
-        };
-        this.router.navigate(['/wallet'], navigationExtras);
+        try{
+          const cifrado: ArrayBuffer = await crypto.subtle.decrypt(
+            {
+              name: "AES-GCM",
+              iv: new Uint8Array(bigintConversion.hexToBuf(hashPassword))
+            },
+            clave,
+            bigintConversion.hexToBuf(localStorage.getItem('wordsEthereum'))
+          )
+          this.palabras = bigintConversion.bufToText(cifrado);
+          environment.login = true;
+          const navigationExtras: NavigationExtras = {
+            state: {
+              palabras: this.palabras
+            }
+          };
+          this.informacion = "";
+          this.router.navigate(['/wallet'], navigationExtras);
+        }
+        
+        catch{
+          this.informacion = "";
+          this.errorPassword = true;
+        }
       });
     }
   }

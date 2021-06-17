@@ -2,9 +2,11 @@
     <header><h1 style="color:#6b6b6b;">COMO QUIERES INICIAR SESIÓN? </h1></header>
     <h3>USAR LAS 12 PALABRAS</h3>
     <div *ngIf="palabrasBoolean">
-        HEMOS ENCONTRADO QUE TIENES PALABRAS ALMACENADAS EN ESTE NAVEGADOR. CON LA CONTRASEÑA PUEDES ENTRAR
+        Hemos encontrado que tienes palabras almacenadas en este navegador. A partir de la contraseña puedes entrar a la Wallet.
+        <p></p>
         <input type="password" [(ngModel)]="password">
-        <input type="submit" value="Cargar Wallet" (click)="cargar()">
+        <input type="submit" value="Ir a la Wallet" (click)="cargar()">
+        <p>{{informacion}}</p>
         <p *ngIf="errorPassword" style="color:#FF0000;">No ha sido posible cargar la wallet</p>
     </div>
     <p>

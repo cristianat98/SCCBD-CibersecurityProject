@@ -45,14 +45,10 @@ export class PrincipalComponent implements OnInit {
         'ropsten',
         'e09590d7ebcc4cab9ea6b6e44ad57a24'
       );
-
       this.wallet = new Wallet(keypair1.privateKey, this.provider);
-      const gasPriceBigNumber: BigNumber = await this.provider.getGasPrice();
-      //1 gwei = 0.000000001 ether.
-      this.gasPrice = parseInt(ethers.utils.formatUnits(gasPriceBigNumber, "gwei"));
-      this.gasPriceString = this.gasPrice.toString() + " GWEI (1 GWEI = 0.000000001 ETHER)";
+      await this.getGas();
       await this.getBalance();
-      await this.getBalanceInfura();
+      //await this.getBalanceInfura();
     }
     
     catch{
@@ -104,7 +100,8 @@ export class PrincipalComponent implements OnInit {
 
     const tx = await this.wallet.sendTransaction({
       to: this.enviarForm.value.destAddress,
-      value: ethers.utils.parseEther(this.enviarForm.value.numEthers.toString())
+      value: ethers.utils.parseEther(this.enviarForm.value.numEthers.toString()),
+      gasPrice: this.gasPrice
     });
   }
 
@@ -120,6 +117,14 @@ export class PrincipalComponent implements OnInit {
   async getBalance(): Promise<void> {
     const balanceBigNumber: BigNumber = await this.wallet.getBalance();
     this.balance = ethers.utils.formatEther(balanceBigNumber) + " ETHS";
+    this.changeDetectorRef.detectChanges();
+  }
+
+  async getGas(): Promise<void> {
+    const gasPriceBigNumber: BigNumber = await this.provider.getGasPrice();
+    //1 gwei = 0.000000001 ether
+    this.gasPrice = parseInt(ethers.utils.formatUnits(gasPriceBigNumber, "gwei"));
+    this.gasPriceString = this.gasPrice.toString() + " GWEI (1 GWEI = 0.000000001 ETHER)";
     this.changeDetectorRef.detectChanges();
   }
 

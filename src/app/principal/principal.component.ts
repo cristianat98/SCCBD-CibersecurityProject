@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { HDNode } from 'ethers/lib/utils';
-import { BigNumber, ethers, Transaction, Wallet } from 'ethers';
+import { BigNumber, ethers, Wallet } from 'ethers';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({

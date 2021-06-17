@@ -1,38 +1,53 @@
 <div class="centrar">
     Sus 12 palabras son las siguientes: 
-    <p>{{mnemonic}}</p>
+    <p><b>{{mnemonic}}</b></p>
+    <h2>GUARDAR LAS 12 PALABRAS</h2>
     <div *ngIf="guardarBoolean">
-        <p>Si quieres puedes guardar el mnemonic en el navegador (protegiéndolo con una contraseña) para poder entrar en tu wallet de una forma rápida</p>
-        <form [formGroup]="passwordForm" (ngSubmit)="guardar()">
-            Contraseña: <input type="password" formControlName="password"/>
-            <ng-container *ngIf="!formControls2.password.valid && pulsado2">
-                <p *ngIf="formControl2s.password.errors.required" style="color:#FF0000">
-                    Este campo es obligatorio
+        <div *ngIf="!guardadoBoolean">
+            Si quieres puedes guardar el mnemonic en el navegador (protegiéndolo con una contraseña) para poder entrar en tu wallet de una forma rápida
+            <p></p>
+            <form [formGroup]="passwordForm" (ngSubmit)="guardar()">
+                Contraseña: <input type="password" formControlName="password"/>
+                <ng-container *ngIf="!formControls2.password.valid && pulsadoPasswords">
+                    <p *ngIf="formControl2s.password.errors.required" style="color:#FF0000">
+                        Este campo es obligatorio
+                    </p>
+                </ng-container>
+                <p>
+                    Confirmar Contraseña: <input type="password" formControlName="confirmPassword"/>
                 </p>
-            </ng-container>
-            <p>
-                Confirmar Contraseña: <input type="password" formControlName="confirmPassword"/>
-            </p>
-            <ng-container *ngIf="!formControls2.confirmPassword.valid && pulsado2">
-                <p *ngIf="formControls2.confirmPassword.errors.required" style="color:#FF0000">
-                    Este campo es obligatorio
+                <ng-container *ngIf="!formControls2.confirmPassword.valid && pulsadoPasswords">
+                    <p *ngIf="formControls2.confirmPassword.errors.required" style="color:#FF0000">
+                        Este campo es obligatorio
+                    </p>
+                </ng-container>
+                <p *ngIf="passwordForm.hasError('checkPassword') && pulsadoPasswords" style="color:#FF0000">
+                    Las contraseñas tienen que coincidir
                 </p>
-            </ng-container>
-            <p *ngIf="passwordForm.hasError('checkPassword') && pulsado2" style="color:#FF0000">
-                Las contraseñas tienen que coincidir
-            </p>
-            <p>
-                <input type="submit" value="Guardar">
-            </p>
-        </form>
+                <p>
+                    <input type="submit" value="Guardar">
+                </p>
+                <p>{{informacion}}</p>
+            </form>
+        </div>
+        <div *ngIf="guardadoBoolean">
+            Ya hay una Wallet guardada en este navegador. Si quieres guardar la nueva Wallet, tendrás que escribir la contraseña de la Wallet que ya está guardada para poder borrarla y guardar la actual 
+            <p></p>
+            Contraseña Wallet Anterior: <input type="password" [(ngModel)]="passwordAntigua">
+            <input type="submit" value="Borrar Antigua Wallet" (click)="borrar()">
+            <p>{{informacion}}</p>
+            <p *ngIf="errorBorrar" style="color:#FF0000">
+                Contraseña Incorrecta
+            </p> 
+        </div>
     </div>
     <div *ngIf="!guardarBoolean">
         <p>PALABRAS GUARDADAS</p>
     </div>
-    <h2>USAR EL SECRETO COMPARTIDO</h2>
+    <h2>USAR EL SECRETO COMPARTIDO (OPCIONAL)</h2>
     <form [formGroup]="secretoForm" (ngSubmit)="generar()">
         Nº de Claves Totales: <input type="number" formControlName="numClaves"/>
-        <ng-container *ngIf="!formControls.numClaves.valid && pulsado">
+        <ng-container *ngIf="!formControls.numClaves.valid && pulsadoClaves">
             <p *ngIf="formControls.numClaves.errors.required" style="color:#FF0000">
                 Este campo es obligatorio
             </p>
@@ -40,12 +55,12 @@
         <p>
             Nº de Claves Necesarias <input type="number" formControlName="numRequest"/>
         </p>
-        <ng-container *ngIf="!formControls.numRequest.valid && pulsado">
+        <ng-container *ngIf="!formControls.numRequest.valid && pulsadoClaves">
             <p *ngIf="formControls.numRequest.errors.required" style="color:#FF0000">
                 Este campo es obligatorio
             </p>
         </ng-container>
-        <p *ngIf="secretoForm.hasError('checkForm') && pulsado" style="color:#FF0000">
+        <p *ngIf="secretoForm.hasError('checkForm') && pulsadoClaves" style="color:#FF0000">
             No has escrito bien los números
         </p>
         <p>

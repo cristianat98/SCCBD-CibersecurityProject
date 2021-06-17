@@ -19,10 +19,14 @@ export class CrearComponent implements OnInit {
   secretoForm: FormGroup;
   passwordForm: FormGroup;
   claves: string[] = [];
-  pulsado: Boolean = false;
-  pulsado2: Boolean = false;
+  pulsadoClaves: Boolean = false;
+  pulsadoPasswords: Boolean = false;
   semilla: Uint8Array;
   guardarBoolean: Boolean = true;
+  guardadoBoolean: Boolean = false;
+  errorBorrar: Boolean = false;
+  passwordAntigua: string;
+  informacion: string = "";
   constructor(private router: Router, private formBuilder: FormBuilder) { }
 
   ngOnInit(): void {
@@ -35,6 +39,9 @@ export class CrearComponent implements OnInit {
       password: ['', Validators.required],
       confirmPassword: ['', Validators.required]
     }, { validator: this.checkPassword })
+
+    if (localStorage.getItem('wordsEthereum') !== null)
+      this.guardadoBoolean = true;
 
     this.semilla = window.crypto.getRandomValues(new Uint8Array(16));
     this.mnemonic = ethers.utils.entropyToMnemonic(this.semilla);
@@ -66,11 +73,12 @@ export class CrearComponent implements OnInit {
   }
 
   async guardar(): Promise<void> {
-    this.pulsado2 = true;
+    this.pulsadoPasswords = true;
     if (this.passwordForm.invalid){
       return
     }
     
+    this.informacion = "Cargando...";
     const hashPassword: string = cryptojs.SHA256(this.passwordForm.value.password).toString();
     hash.scrypt(this.passwordForm.value.password, hashPassword, 32).then(async key => {
       const clave = await crypto.subtle.importKey(
@@ -90,11 +98,50 @@ export class CrearComponent implements OnInit {
       )
       localStorage.setItem('wordsEthereum', bigintConversion.bufToHex(cifrado));
       this.guardarBoolean = false;
+      this.informacion = "";
     });
   }
 
+  borrar(): void {
+    if (this.passwordAntigua === undefined || this.passwordAntigua === "")
+      this.errorBorrar = true;
+
+    else{
+      this.errorBorrar = false;
+      this.informacion = "Cargando...";
+      const hashPassword: string = cryptojs.SHA256(this.passwordAntigua).toString();
+      hash.scrypt(this.passwordAntigua, hashPassword, 32).then(async key => {
+        const clave = await crypto.subtle.importKey(
+          "raw",
+          key,
+          "AES-GCM",
+          true,
+          ["encrypt", "decrypt"]
+        )
+        try{
+          const cifrado: ArrayBuffer = await crypto.subtle.decrypt(
+            {
+              name: "AES-GCM",
+              iv: new Uint8Array(bigintConversion.hexToBuf(hashPassword))
+            },
+            clave,
+            bigintConversion.hexToBuf(localStorage.getItem('wordsEthereum'))
+          )
+          this.informacion = "";
+          this.guardadoBoolean = false;
+          localStorage.clear();
+        }
+        catch{
+          this.errorBorrar = true;
+          this.passwordAntigua = "";
+          this.informacion = "";
+        }
+      });
+    }
+  }
+
   generar(): void {
-    this.pulsado = true;
+    this.pulsadoClaves = true;
     if (this.secretoForm.invalid){
       return
     }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { NavigationExtras, Router } from '@angular/router';
 import * as secrets from 'shamirs-secret-sharing-ts';
 import { environment } from 'src/environments/environment';
@@ -24,7 +24,7 @@ export class AbrirComponent implements OnInit {
   password: string;
   errorPassword: Boolean = false;
   informacion: string = "";
-  constructor(private router: Router) { }
+  constructor(private router: Router, private zone: NgZone) { }
 
   ngOnInit(): void {
     if (localStorage.getItem('wordsEthereum') !== null)
@@ -64,7 +64,9 @@ export class AbrirComponent implements OnInit {
             }
           };
           this.informacion = "";
-          this.router.navigate(['/wallet'], navigationExtras);
+          this.zone.run(() => {
+            this.router.navigate(['/wallet'], navigationExtras);
+          });
         }
         
         catch{

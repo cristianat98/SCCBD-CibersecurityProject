@@ -1,17 +1,15 @@
 <div class="centrar">
-    <p>BALANCE: {{balance}} <input type="submit" value="RefreshBalance" (click)="getBalance()"/></p>
-    <p>PRECIO GAS: {{gasPriceString}} <input type="submit" value="RefreshGas" (click)="getGas()"/></p>
+    <p>BALANCE: {{balance}} <input type="submit" value="RefreshBalance" (click)="getBalanceInfura()"/></p>
+    <p>PRECIO GAS: {{gasPriceString}} <input type="submit" value="RefreshGas" (click)="getGasInfura()"/></p>
     <p>
-        <input type="submit" value="Enviar" (click)="formEthers()"/>
-        <input type="submit" value="Recibir" (click)="getAddress()"/>
+        <input type="submit" value="Enviar dinero" (click)="formEthers()"/>
+        <input type="submit" value="Recibir dinero" (click)="getAddress()"/>
+        <input type="submit" value="Ver Transacciones" (click)="getTransactions()"/>
     </p>
 
     <div *ngIf="enviarBoolean">
         <form [formGroup]="enviarForm" (ngSubmit)="enviarEthers()">
             Introduce cuantos ethers quieres enviar: <input type="number" formControlName="numEthers"/>*
-            <p *ngIf="enviarForm.value.numEthers > 0">
-                    Precio estimado del GAS: {{estimacionGas}}
-            </p>
             <ng-container *ngIf="!formControls.numEthers.valid && pulsado">
                 <p *ngIf="formControls.numEthers.errors.required" style="color:#FF0000">
                     Este campo es obligatorio
@@ -20,6 +18,19 @@
                     Valor no correcto
                 </p>
             </ng-container>
+            <p>Cuanto más alto sea el precio, más rápida se hará la transacción. Si eliges un precio demasiado bajo es posible que nunca se haga</p>
+            <p>
+                Escribe el precio del GAS al que quieres hacer la transacción (GWEI): <input type="number" formControlName="gasPrice"/>*
+                <ng-container *ngIf="!formControls.gasPrice.valid && pulsado">
+                    <p *ngIf="formControls.gasPrice.errors.required" style="color:#FF0000">
+                        Este campo es obligatorio
+                    </p>
+                    <p *ngIf="!formControls.gasPrice.errors.required && formControls.gasPrice.errors.checkGas" style="color:#FF0000">
+                        No puedes usar un precio del GAS negativo
+                    </p>
+                </ng-container>
+            </p>
+            <p *ngIf="formControls.gasPrice.valid">Estimación de la comisión (en Ethers): {{calcularGas()}}</p>
             <p>
                 Escribe la dirección de la billetera destino: <input type="string" size="50" formControlName="destAddress"/>*
                 <ng-container *ngIf="!formControls.destAddress.valid && pulsado">
@@ -50,5 +61,7 @@
             </p>
         </form>
     </div>  
-    <div *ngIf="addressBoolean">Tu dirección es: {{address}}</div>
+    <div *ngIf="addressBoolean">Tu dirección es: {{address}}
+        <p>Dale esta dirección a quien quieras que te envíe dinero</p>
+    </div>
 </div>

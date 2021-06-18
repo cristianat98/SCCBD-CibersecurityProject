@@ -287,7 +287,7 @@ export class PrincipalComponent implements OnInit {
   }
 
   async getTransactions(): Promise<void> {
-    const count = await this.provider.getTransactionCount(this.address);
+    const count = await this.provider.send('eth_subscribe', ["newHeads"]);
     console.log(count);
     /*const response = await this.provider.send('eth_getTransactionCount', "later")
     const transactions = await this.wallet.getTransactionCount();

@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { HDNode } from 'ethers/lib/utils';
 import { BigNumber, ethers, Wallet } from 'ethers';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import * as bigintConversion from 'bigint-conversion';
 
 @Component({
   selector: 'app-principal',
@@ -23,6 +22,8 @@ export class PrincipalComponent implements OnInit {
   gasPriceString: string = "Cargando...";
   provider;
   estimacionGas: number = 0;
+  informacion: string = "";
+  errorTransaccion: Boolean = false;
   constructor(private changeDetectorRef: ChangeDetectorRef, private formBuilder: FormBuilder, private router: Router, private zone: NgZone) { }
 
   async ngOnInit(): Promise<void> {
@@ -43,8 +44,8 @@ export class PrincipalComponent implements OnInit {
 
       this.wallet = new Wallet(keypair1.privateKey, this.provider);
       this.address = await this.wallet.getAddress();
-      //await this.getBalanceGanache();
-      //await this.getGasGanache();
+      /*await this.getBalanceGanache();
+      await this.getGasGanache();*/
       await this.getBalanceInfura();
       await this.getGasInfura();
       
@@ -78,18 +79,19 @@ export class PrincipalComponent implements OnInit {
   }
 
   gasValid(group: FormGroup) {
-      if (group.value <= 0)
-        return ({ethersValid: true})
+    if (group.value <= 0)
+      return ({ethersValid: true})
 
-      else{
-        return null;
-      } 
-    }
+    else{
+      return null;
+    } 
+  }
 
-    calcularGas(): number {
-      this.estimacionGas = 21000*this.enviarForm.value.gasPrice*0.000000001
-      return this.estimacionGas;
-    }
+  calcularGas(): number {
+    this.estimacionGas = 21000*this.enviarForm.value.gasPrice*0.000000001
+    return this.estimacionGas;
+  }
+
   checkAddress(group: FormGroup) {
     if (group.value.destAddress !== group.value.confirmAddress)
       return ({checkAddress: true});
@@ -117,15 +119,41 @@ export class PrincipalComponent implements OnInit {
 
   async enviarEthers(): Promise<void> {
     this.pulsado = true;
+    this.errorTransaccion = false;
+    this.informacion = "";
     if (this.enviarForm.invalid){
       return;
     }
 
-    const tx = await this.wallet.sendTransaction({
-      to: this.enviarForm.value.destAddress,
-      value: ethers.utils.parseEther(this.enviarForm.value.numEthers.toString()),
-      gasPrice: this.gasPrice
-    });
+    try{
+      const tx = await this.wallet.sendTransaction({
+        to: this.enviarForm.value.destAddress,
+        value: ethers.utils.parseEther(this.enviarForm.value.numEthers.toString()),
+        gasPrice: ethers.utils.parseUnits(this.enviarForm.value.gasPrice.toString(), "gwei")
+      });
+      
+      this.informacion = "Transacción enviada";
+      this.pulsado = false;
+      setInterval(() => {
+        this.informacion = "";
+        this.changeDetectorRef.detectChanges();
+      }, 5000);
+      this.enviarForm.controls['numEthers'].setValue('');
+      this.enviarForm.controls['gasPrice'].setValue(1);
+      this.enviarForm.controls['destAddress'].setValue('');
+      this.enviarForm.controls['confirmAddress'].setValue('');
+      this.changeDetectorRef.detectChanges();
+    }
+
+    catch{
+      this.errorTransaccion = true;
+      this.changeDetectorRef.detectChanges();
+      setInterval(() => {
+        this.errorTransaccion = false;
+        this.changeDetectorRef.detectChanges();
+      }, 5000)
+    }
+    
   }
 
   getAddress(): void {
@@ -160,8 +188,8 @@ export class PrincipalComponent implements OnInit {
   }
 
   async getTransactions(): Promise<void> {
-    const history = await this.provider.getHistory(this.address);
-    console.log(history);
+    const count = await this.provider.getTransactionCount(this.address);
+    console.log(count);
     /*const response = await this.provider.send('eth_getTransactionCount', "later")
     const transactions = await this.wallet.getTransactionCount();
     console.log(transactions);*/

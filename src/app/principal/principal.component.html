@@ -4,7 +4,7 @@
     <p>
         <input type="submit" value="Enviar dinero" (click)="formEthers()"/>
         <input type="submit" value="Recibir dinero" (click)="getAddress()"/>
-        <input type="submit" value="Ver Transacciones" (click)="getTransactions()"/>
+        <!--<input type="submit" value="Ver Transacciones" (click)="getTransactions()"/>-->
     </p>
 
     <div *ngIf="enviarBoolean">
@@ -58,6 +58,12 @@
             </p>
             <p>
                 <input type="submit" value="Enviar Ethers"/>
+            </p>
+            <p>
+                {{informacion}}
+            </p>
+            <p *ngIf="errorTransaccion" style="color:#FF0000">
+                Ha habido un error en la transacción. Revisa que tengas suficientes fondos
             </p>
         </form>
     </div>  

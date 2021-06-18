@@ -3,6 +3,9 @@ import { Router } from '@angular/router';
 import { HDNode } from 'ethers/lib/utils';
 import { BigNumber, ethers, Wallet } from 'ethers';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import * as bigintConversion from 'bigint-conversion';
+import * as cryptojs from 'crypto-js';
+import * as hash from 'scrypt-pbkdf';
 
 @Component({
   selector: 'app-principal',
@@ -17,6 +20,7 @@ export class PrincipalComponent implements OnInit {
   addressBoolean: Boolean = false;
   enviarBoolean: Boolean = false;
   enviarForm: FormGroup;
+  passwordForm: FormGroup;
   pulsado: Boolean = false;
   gasPrice: number = 0;
   gasPriceString: string = "Cargando...";
@@ -24,13 +28,22 @@ export class PrincipalComponent implements OnInit {
   estimacionGas: number = 0;
   informacion: string = "";
   errorTransaccion: Boolean = false;
+  guardarBoolean: Boolean = false;
+  guardadoBoolean: Boolean = false;
+  pulsadoPasswords: Boolean = false;
+  palabras: string;
+  errorBorrar: Boolean = false;
+  passwordAntigua: string;
   constructor(private changeDetectorRef: ChangeDetectorRef, private formBuilder: FormBuilder, private router: Router, private zone: NgZone) { }
 
   async ngOnInit(): Promise<void> {
-    const palabras: string = history.state.palabras;
+    this.palabras = history.state.palabras;
+
+    if (localStorage.getItem('wordsEthereum') !== null)
+      this.guardadoBoolean = true;
 
     try{
-      const masterNode: HDNode = ethers.utils.HDNode.fromMnemonic(palabras);
+      const masterNode: HDNode = ethers.utils.HDNode.fromMnemonic(this.palabras);
       const keypair1: HDNode = masterNode.derivePath("m/44'/60'/0'/0/0");//preguntar indice 0 no da correctamente ETHERS
   
       //LOCALHOST -> GANACHE
@@ -55,6 +68,11 @@ export class PrincipalComponent implements OnInit {
         destAddress: ['', [Validators.required, this.checkLength]],
         confirmAddress: ['', [Validators.required, this.checkLength]]
       }, { validator: this.checkAddress });
+
+      this.passwordForm = this.formBuilder.group({
+        password: ['', Validators.required],
+        confirmPassword: ['', Validators.required]
+      }, { validator: this.checkPassword })
     }
     
     catch{
@@ -67,6 +85,10 @@ export class PrincipalComponent implements OnInit {
 
   get formControls(){
     return this.enviarForm.controls;
+  }
+
+  get formControls2(){
+    return this.passwordForm.controls;
   }
 
   ethersValid(group: FormGroup) {
@@ -100,8 +122,12 @@ export class PrincipalComponent implements OnInit {
       return null;
   }
 
-  calcularComision(): void {
-    this.estimacionGas = (21000*this.gasPrice)/0.000000001;
+  checkPassword(group: FormGroup) {
+    if (group.value.password !== group.value.confirmPassword)
+      return ({checkPassword: true})
+
+    else
+      return null;
   }
 
   checkLength(group: FormGroup) {
@@ -138,6 +164,7 @@ export class PrincipalComponent implements OnInit {
         this.informacion = "";
         this.changeDetectorRef.detectChanges();
       }, 5000);
+
       this.enviarForm.controls['numEthers'].setValue('');
       this.enviarForm.controls['gasPrice'].setValue(1);
       this.enviarForm.controls['destAddress'].setValue('');
@@ -159,6 +186,78 @@ export class PrincipalComponent implements OnInit {
   getAddress(): void {
     this.enviarBoolean = false;
     this.addressBoolean = true;
+  }
+
+  getSave(): void {
+    this.guardarBoolean = true;
+  }
+
+  guardar(): void {
+    this.pulsadoPasswords = true;
+    if (this.passwordForm.invalid){
+      return
+    }
+    
+    this.informacion = "Cargando...";
+    const hashPassword: string = cryptojs.SHA256(this.passwordForm.value.password).toString();
+    hash.scrypt(this.passwordForm.value.password, hashPassword, 32).then(async key => {
+      const clave = await crypto.subtle.importKey(
+        "raw",
+        key,
+        "AES-GCM",
+        true,
+        ["encrypt", "decrypt"]
+      )
+      const cifrado: ArrayBuffer = await crypto.subtle.encrypt(
+        {
+          name: "AES-GCM",
+          iv: new Uint8Array(bigintConversion.hexToBuf(hashPassword))
+        }, 
+        clave, 
+        new Uint8Array(bigintConversion.textToBuf(this.palabras))
+      )
+      localStorage.setItem('wordsEthereum', bigintConversion.bufToHex(cifrado));
+      this.guardarBoolean = false;
+      this.informacion = "";
+    });
+  }
+
+  borrar(): void {
+    if (this.passwordAntigua === undefined || this.passwordAntigua === "")
+      this.errorBorrar = true;
+
+    else{
+      this.errorBorrar = false;
+      this.informacion = "Cargando...";
+      const hashPassword: string = cryptojs.SHA256(this.passwordAntigua).toString();
+      hash.scrypt(this.passwordAntigua, hashPassword, 32).then(async key => {
+        const clave = await crypto.subtle.importKey(
+          "raw",
+          key,
+          "AES-GCM",
+          true,
+          ["encrypt", "decrypt"]
+        )
+        try{
+          const cifrado: ArrayBuffer = await crypto.subtle.decrypt(
+            {
+              name: "AES-GCM",
+              iv: new Uint8Array(bigintConversion.hexToBuf(hashPassword))
+            },
+            clave,
+            bigintConversion.hexToBuf(localStorage.getItem('wordsEthereum'))
+          )
+          this.informacion = "";
+          this.guardadoBoolean = false;
+          localStorage.clear();
+        }
+        catch{
+          this.errorBorrar = true;
+          this.passwordAntigua = "";
+          this.informacion = "";
+        }
+      });
+    }
   }
 
   async getBalanceGanache(): Promise<void> {

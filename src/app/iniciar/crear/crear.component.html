@@ -9,7 +9,7 @@
             <form [formGroup]="passwordForm" (ngSubmit)="guardar()">
                 Contraseña: <input type="password" formControlName="password"/>
                 <ng-container *ngIf="!formControls2.password.valid && pulsadoPasswords">
-                    <p *ngIf="formControl2s.password.errors.required" style="color:#FF0000">
+                    <p *ngIf="formControls2.password.errors.required" style="color:#FF0000">
                         Este campo es obligatorio
                     </p>
                 </ng-container>

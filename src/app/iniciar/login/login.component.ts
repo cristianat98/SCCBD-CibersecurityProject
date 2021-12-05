@@ -1,8 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import * as data from '../../../assets/usuario.json';
-import * as cryptojs from 'crypto-js';
 import { Router } from '@angular/router';
-import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-login',
